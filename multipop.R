@@ -94,7 +94,8 @@ sm.kt.China.female<-sm$lpFit[,2]
 plot(Sweden$year,sm.kt.Sweden.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
 for(i in 1:34)
 {
-  lines(eval(parse(text = paste(names[i])))$year,eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))), col = i)
+  lines(eval(parse(text = paste(names[i])))$year,
+        eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))), col = i)
 }
 lines(years.mort, sm.kt.China.female,col="black",lwd=3)
 
@@ -115,7 +116,7 @@ loss <- function(theta,t,kt,t.Sweden,kt.Sweden.female){
 }
 
 t.Sweden=Sweden$year
-for(i in 1:36)
+for(i in 1:35)
 {
   # nonlinear optimization
   if (max(eval(parse(text = paste(names[i])))$year) <= 2011)
@@ -131,6 +132,42 @@ for(i in 1:36)
   nam7 <- paste("theta0",names[i],"female",sep=".")
   assign(nam7,out$par)
 }
+## initial thetas from China
+out.China=optim(theta0, loss, gr=NULL,years.mort,sm.kt.China.female,
+          t.Sweden,kt.Sweden.female,control = list(maxit=1000))
+theta0.China.female=out.China$par
+
+## test (the shift kt's vs reference curve)
+loss <- function(theta,t,kt,t.Sweden,kt.Sweden.female){
+  theta1=theta[1]
+  theta2=theta[2]
+  theta3=theta[3]
+  theta4=theta[4]
+  dref=data.frame(kt.Sweden.female,t.Sweden)
+  sm.t=(t-theta2)/theta3 # time adjustment
+  sm <- locpol(kt.Sweden.female~t.Sweden,dref,kernel=EpaK,xeval=sm.t) # time-adjusted kt based on smoothed Sweden
+  mu = theta1*sm$lpFit[,2]+theta4 # modelled new kt
+  return(mu)
+}
+
+for (i in 1:35)
+{
+  nam13=paste("test",names[i],sep=".")
+  assign(nam13,loss(eval(parse(text = paste("theta0",names[i],"female",sep="."))),eval(parse(text = paste(names[i])))$year,
+                    eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))),
+                    t.Sweden,kt.Sweden.female))
+}
+test.China = loss(theta0.China.female,years.mort,sm.kt.China.female,t.Sweden , kt.Sweden.female )
+## plot shifted kt of 36 countries including China
+plot(Sweden$year,sm.kt.Sweden.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
+for(i in 1:35)
+{
+  lines(eval(parse(text = paste(names[i])))$year,
+        eval(parse(text = paste("test",names[i],sep="."))), col = i)
+}
+lines(years.mort, test.China,col="black",lwd=3)
+
+
 
 
 
@@ -139,14 +176,14 @@ for(i in 1:36)
 
 
 # standardize theta
-theta.matrix=matrix(rep(0,128),32,4)
+theta.matrix=matrix(rep(0,144),36,4)
 theta.matrix[1,]=theta0.Australia.female
-for(i in 2:32)
+for(i in 2:36)
 {
   theta.matrix[i,]=theta.matrix[i-1,] + eval(parse(text = paste("theta0",names[i],"female",sep=".")))
   }
-theta.temp=theta.matrix[32,]
-for(i in 1:32)
+theta.temp=theta.matrix[36,]
+for(i in 1:36)
 {
   nam8=paste("theta0",names[i],"female1",sep=".")
   assign(nam8,eval(parse(text = paste("theta0",names[i],"female",sep=".")))[1] / theta.temp[1])
@@ -156,7 +193,6 @@ for(i in 1:32)
   assign(nam10,eval(parse(text = paste("theta0",names[i],"female",sep=".")))[2] - theta.temp[2]/32)
   nam11=paste("theta0",names[i],"female4",sep=".")
   assign(nam11,eval(parse(text = paste("theta0",names[i],"female",sep=".")))[4] - theta.temp[4]/32)
-  
 }
 #construct initial common trend
 g <- function(theta2,theta3,t,kt){
@@ -167,9 +203,11 @@ g <- function(theta2,theta3,t,kt){
   return(mu)
 }
 
-for(i in 1:32)
+for(i in 1:35)
 {
   nam12=paste("g",i,sep="")
-  assign(nam12,g(eval(parse(text = paste("theta0",names[i],"female",sep=".")))[2],eval(parse(text = paste("theta0",names[i],"female",sep=".")))[3],eval(parse(text = paste(names[i])))$year,eval(parse(text = paste("kt.",  names[i], ".female", sep = "")))))
+  assign(nam12,g(eval(parse(text = paste("theta0",names[i],"female",sep=".")))[2],
+                 eval(parse(text = paste("theta0",names[i],"female",sep=".")))[3],eval(parse(text = paste(names[i])))$year,
+                 eval(parse(text = paste("kt.",  names[i], ".female", sep = "")))))
 }
 
