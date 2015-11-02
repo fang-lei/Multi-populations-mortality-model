@@ -35,30 +35,34 @@ kt.China.male=China.lca.male$kt
 kt.China.female=China.lca.female$kt
 
 
-# read multi-pop female mortality loop 36 countries including Ukraine
-shortnames=c("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
+# read multi-pop female mortality loop 36 countries
+shortnames36=c("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
              "DEUTNP","HUN","ISL","IRL","ISR","ITA","JPN","LVA","LTU","LUX","NLD","NZL_NP",
              "NOR","POL","PRT","RUS","SVK","SVN","ESP","SWE","CHE","TWN","GBR_NP","USA","UKR")
-names=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
+names36=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
         "Denmark","Estonia","Finland","France","Germany","Hungary","Iceland","Ireland","Israel",
         "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
         "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
         "Taiwan","UnitedKingdom","USA","Ukraine")
 
 for (i in 1:36){
-  nam1 <- paste(names[i])
-  assign(nam1, hmd.mx(shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i]))
-  temp1=hmd.mx(shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i])
-  nam2 <- paste(names[i],"lca.female",sep=".")
+  nam1 <- paste(names36[i])
+  assign(nam1, hmd.mx(shortnames36[i], "fanglei@hu-berlin.de", "1440177160", names36[i]))
+  temp1=hmd.mx(shortnames36[i], "fanglei@hu-berlin.de", "1440177160", names36[i])
+  nam2 <- paste(names36[i],"lca.female",sep=".")
   assign(nam2, lca(temp1,series="female",adjust="dt",interpolate = TRUE))
   temp2=lca(temp1,series="female",adjust="dt",interpolate = TRUE)
-  nam3 <- paste("ax",names[i],"female",sep=".")
+  nam3 <- paste("ax",names36[i],"female",sep=".")
   assign(nam3,temp2$ax)
-  nam4 <- paste("bx",names[i],"female",sep=".")
+  nam4 <- paste("bx",names36[i],"female",sep=".")
   assign(nam4,temp2$bx)
-  nam5 <- paste("kt",names[i],"female",sep=".")
+  nam5 <- paste("kt",names36[i],"female",sep=".")
   assign(nam5,temp2$kt)
 }
+
+
+
+
 
 # plot kt of 36 countries excluding Ukraine but including China
 plot(kt.France.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
