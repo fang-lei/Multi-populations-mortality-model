@@ -1,9 +1,10 @@
-setwd("Users\\lei.fang\\Desktop\\multi-populations model\\semipop R")
+setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 
 library(demography)
 library(locpol)
 library(rgl)
 
+## read data sets
 # China
 # mortality data
 
@@ -35,43 +36,34 @@ kt.China.male=China.lca.male$kt
 kt.China.female=China.lca.female$kt
 
 
-# read multi-pop female mortality loop 36 countries
-shortnames36=c("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
+# read multi-pop female mortality of 35 countries from Human Mortality Database
+shortnames=c("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
              "DEUTNP","HUN","ISL","IRL","ISR","ITA","JPN","LVA","LTU","LUX","NLD","NZL_NP",
-             "NOR","POL","PRT","RUS","SVK","SVN","ESP","SWE","CHE","TWN","GBR_NP","USA","UKR")
-names36=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
+             "NOR","POL","PRT","RUS","SVK","SVN","ESP","CHE","TWN","GBR_NP","USA","SWE")
+names=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
         "Denmark","Estonia","Finland","France","Germany","Hungary","Iceland","Ireland","Israel",
         "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
-        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
-        "Taiwan","UnitedKingdom","USA","Ukraine")
+        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Switzerland",
+        "Taiwan","UnitedKingdom","USA","Sweden","China")
 
-for (i in 1:36){
-  nam1 <- paste(names36[i])
-  assign(nam1, hmd.mx(shortnames36[i], "fanglei@hu-berlin.de", "1440177160", names36[i]))
-  temp1=hmd.mx(shortnames36[i], "fanglei@hu-berlin.de", "1440177160", names36[i])
-  nam2 <- paste(names36[i],"lca.female",sep=".")
+for (i in 1:35){
+  nam1 <- paste(names[i])
+  assign(nam1, hmd.mx(shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i]))
+  temp1=hmd.mx(shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i])
+  nam2 <- paste(names[i],"lca.female",sep=".")
   assign(nam2, lca(temp1,series="female",adjust="dt",interpolate = TRUE))
   temp2=lca(temp1,series="female",adjust="dt",interpolate = TRUE)
-  nam3 <- paste("ax",names36[i],"female",sep=".")
+  nam3 <- paste("ax",names[i],"female",sep=".")
   assign(nam3,temp2$ax)
-  nam4 <- paste("bx",names36[i],"female",sep=".")
+  nam4 <- paste("bx",names[i],"female",sep=".")
   assign(nam4,temp2$bx)
-  nam5 <- paste("kt",names36[i],"female",sep=".")
+  nam5 <- paste("kt",names[i],"female",sep=".")
   assign(nam5,temp2$kt)
 }
 
-
-
-
-
-# plot kt of 36 countries excluding Ukraine but including China
-plot(kt.France.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
-
-names=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
-        "Denmark","Estonia","Finland","Germany","Hungary","Iceland","Ireland","Israel",
-        "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
-        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
-        "Taiwan","UnitedKingdom","USA")
+## descriptive plot
+# plot kt of 36 countries including China
+plot(kt.Sweden.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
 for(i in 1:34)
 {
   lines(eval(parse(text = paste("kt.",  names[i], ".female", sep = ""))), col = i)
@@ -79,17 +71,10 @@ for(i in 1:34)
 lines(kt.China.female,col="black",lwd=3)
 
 
-
 ##### common trend
 
-### initial setting
-
-# nonparametric smoothing 36 with China not Ukraine
-names=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
-        "Denmark","Estonia","Finland","France","Germany","Hungary","Iceland","Ireland","Israel",
-        "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
-        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
-        "Taiwan","UnitedKingdom","USA")
+#### initial setting
+### nonparametric smoothing 36 countries including China
 for(i in 1:35)
 {
   kt=eval(parse(text = paste("kt.", names[i], ".female", sep = "")))
@@ -100,57 +85,58 @@ for(i in 1:35)
   nam6 <- paste("sm.kt",names[i],"female",sep=".")
   assign(nam6,sm$lpFit[,2])
 }
-
-# smooth China female data
+## smooth China female data
 d=data.frame(kt.China.female,years.mort)
 sm<- locpol(kt.China.female~years.mort,d,kernel=EpaK,xeval=years.mort)
 sm.kt.China.female<-sm$lpFit[,2]
 
-
-# plot smoothed kt of 36 countries including China
-plot(France$year,sm.kt.France.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
-
-names=c("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
-        "Denmark","Estonia","Finland","Germany","Hungary","Iceland","Ireland","Israel",
-        "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
-        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Sweden","Switzerland",
-        "Taiwan","UnitedKingdom","USA")
+## plot smoothed kt of 36 countries including China
+plot(Sweden$year,sm.kt.Sweden.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
 for(i in 1:34)
 {
   lines(eval(parse(text = paste(names[i])))$year,eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))), col = i)
 }
 lines(years.mort, sm.kt.China.female,col="black",lwd=3)
 
-## starting values of theta's (excluding Norway and Austria,Sweden,China)
-# set kt of France as reference curve
-names=c("Australia","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
-        "Denmark","Estonia","Finland","Germany","Hungary","Iceland","Ireland","Israel",
-        "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand",
-        "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Switzerland",
-        "Taiwan","UnitedKingdom","USA","France")
+#### starting values of thetas
+### set kt of Sweden as reference curve
 
-loss <- function(theta,t,kt,t.France,kt.France.female){
+loss <- function(theta,t,kt,t.Sweden,kt.Sweden.female){
   theta1=theta[1]
   theta2=theta[2]
   theta3=theta[3]
   theta4=theta[4]
-  dref=data.frame(kt.France.female,t.France)
+  dref=data.frame(kt.Sweden.female,t.Sweden)
   sm.t=(t-theta2)/theta3 # time adjustment
-  sm <- locpol(kt.France.female~t.France,dref,kernel=EpaK,xeval=sm.t) # time-adjusted kt based on smoothed France
+  sm <- locpol(kt.Sweden.female~t.Sweden,dref,kernel=EpaK,xeval=sm.t) # time-adjusted kt based on smoothed Sweden
   mu = theta1*sm$lpFit[,2]+theta4 # modelled new kt
   mse = mean((kt-mu)^2) # mse of new kt and the smoothed one
   return(mse)
 }
 
-t.France=France$year
-for(i in 1:32)
+t.Sweden=Sweden$year
+for(i in 1:36)
 {
   # nonlinear optimization
-  theta0=c(1,0,1,0)
-  out=optim(theta0, loss, gr=NULL,eval(parse(text = paste(names[i])))$year,eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))),t.France,kt.France.female,control = list(maxit=1000))
+  if (max(eval(parse(text = paste(names[i])))$year) <= 2011)
+  {theta0 = c(1,0,1,0)}
+  else {if (max(eval(parse(text = paste(names[i])))$year) == 2012)
+    {theta0 = c(1,1,1,0)}
+  else {if (max(eval(parse(text = paste(names[i])))$year) == 2013)
+    {theta0 = c(1,2,1,0)}
+  else {theta0 = c(1,3,1,0)}}}
+  out=optim(theta0, loss, gr=NULL,eval(parse(text = paste(names[i])))$year,
+            eval(parse(text = paste("sm.kt.",  names[i], ".female", sep = ""))),
+            t.Sweden,kt.Sweden.female,control = list(maxit=1000))
   nam7 <- paste("theta0",names[i],"female",sep=".")
   assign(nam7,out$par)
 }
+
+
+
+
+
+
 
 # standardize theta
 theta.matrix=matrix(rep(0,128),32,4)
