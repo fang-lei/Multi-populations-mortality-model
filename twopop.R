@@ -1,5 +1,25 @@
+# ------------------------------------------------------------------------------
+# Project:     Mortality Model for Multip-populations: A Semiparametric 
+#              Comparison Approach
+# ------------------------------------------------------------------------------
+# Quantlet:    twopop.R
+# ------------------------------------------------------------------------------
+# Description: Estimate and forecast mortality rates based on a semi-parametric 
+#              approach, which applies parametric modelling for multiple 
+#              nonparametric curves with the shape-related nonlinear variation.
+#              Use China and Japan to demonstrate two-country case.
+# ------------------------------------------------------------------------------
+# Keywords:    nonparametric smoothing, parametric modeling, Lee-Carter method,
+#              mortality, China, Japan 
+# ------------------------------------------------------------------------------
+# See also:    multipop.R
+# ------------------------------------------------------------------------------
+# Author:      Lei Fang
+# ------------------------------------------------------------------------------
+
 setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 
+# install packages
 library(demography)
 library(locpol)
 library(rgl)
