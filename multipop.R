@@ -189,7 +189,18 @@ out.China=optim(theta0, loss, gr=NULL,years.mort,sm.kt.China.female,
           t.reference,kt.reference,control = list(maxit=1000))
 theta0.China.female=out.China$par
 
-## test (the shift kt's vs reference curve)
+## test of theta (need set up criteron for next loop)
+for(i in 1:36)
+{
+  nam15= paste("error.theta",names[i],"female",sep=".")
+  temp4=mean((eval(parse(text=paste("theta0",names[i],"female",sep=".")))[1]-theta0[1])^2,
+             (eval(parse(text=paste("theta0",names[i],"female",sep=".")))[2]-theta0[2])^2,
+          (eval(parse(text=paste("theta0",names[i],"female",sep=".")))[3]-theta0[3])^2,
+          (eval(parse(text=paste("theta0",names[i],"female",sep=".")))[4]-theta0[4])^2)
+  assign(nam15,temp4)
+}
+
+## test (the shifted kt's vs previous one) 
 loss <- function(theta,t,kt,t.reference,kt.reference){
   theta1=theta[1]
   theta2=theta[2]
@@ -218,6 +229,14 @@ for(i in 1:35)
         eval(parse(text = paste("test",names[i],sep="."))), col = i)
 }
 lines(years.mort, test.China,col="black",lwd=3)
+
+## error between shifted curve and previous one (need set up criteron for next loop)
+for(i in 1:36)
+{
+  nam16= paste("error.curve",names[i],"female",sep=".")
+  temp5=mean((eval(parse(text=paste("test",names[i],sep=".")))-eval(parse(text=paste("sm.kt.",  names[i], ".female", sep = ""))))^2)
+  assign(nam16,temp5)
+}
 
 
 
