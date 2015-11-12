@@ -211,7 +211,7 @@ for (i in 1:35)
 }
 test.China = loss(theta0.China.female,years.mort,sm.kt.China.female,t.reference , kt.reference )
 ## plot shifted kt of 36 countries including China
-plot(reference, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
+plot(reference, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt",lwd=4,col="red")
 for(i in 1:35)
 {
   lines(eval(parse(text = paste(names[i])))$year,
