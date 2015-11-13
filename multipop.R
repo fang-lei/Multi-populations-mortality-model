@@ -103,12 +103,13 @@ for(i in 1:35)
   d=data.frame(kt,t)
   sm<- locpol(kt~t,d,kernel=EpaK,xeval=t) # smooth kt
   nam6 <- paste("sm.kt",names[i],"female",sep=".")
-  assign(nam6,sm$lpFit[,2])
+  temp6 = ts(sm$lpFit[,2], start = t[1], frequency = 1)
+  assign(nam6,temp6)
 }
 ## smooth China female data
 d=data.frame(kt.China.female,years.mort)
 sm<- locpol(kt.China.female~years.mort,d,kernel=EpaK,xeval=years.mort)
-sm.kt.China.female<-sm$lpFit[,2]
+sm.kt.China.female = ts(sm$lpFit[,2], start = 1994, frequency =1)
 
 ## plot smoothed kt of 36 countries including China
 plot(Sweden$year,sm.kt.Sweden.female, type = "l", ylim = c(-250,150), xlab = "Time", ylab="kt")
@@ -130,14 +131,14 @@ names17=c("Australia","Austria","Bulgaria","Canada",
         "Italy","Japan","Netherlands","Norway",
         "Spain","Switzerland",
         "UnitedKingdom","USA","Sweden")
-merge1=kt.Australia.female
+merge1=sm.kt.Australia.female
 for(i in 1:16)
 {
   nam14= paste("merge", i+1, sep = "")
-  temp3=merge.zoo(eval(parse(text = paste("merge", i, sep = ""))),eval(parse(text = paste("kt.", names17[i+1], ".female", sep = ""))))
+  temp3=merge.zoo(eval(parse(text = paste("merge", i, sep = ""))),eval(parse(text = paste("sm.kt.", names17[i+1], ".female", sep = ""))))
   assign(nam14,temp3)
 }
-reference0=rowMeans(merge17,na.rm = TRUE)
+reference0=rowMeans(merge17 , na.rm = TRUE)
 reference=ts(reference,start=1751,frequency=1)
 
 ## plot the reference curve among all 36 smoothed curves
