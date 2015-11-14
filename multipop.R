@@ -19,21 +19,21 @@
 setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 
 # install packages
-library(demography)
-library(locpol)
-library(rgl)
+library (demography)
+library (locpol)
+library (rgl)
 
-par(mar=c(5, 5, 2, 2),cex.axis = 1.5, cex.lab = 2)
+par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 ## read data sets
 # China
 # mortality data
 
 ## China male mortility data
-data2<-read.table('Chinamortalitymale.txt',header=F,sep='')
-data2pop<-read.table('Chinamortalitymalepop.txt',header=F,sep='')
-ages.mort<-0:90
-years.mort<-1994:2010
-China.mort.male<-demogdata(data2,data2pop,ages.mort,years.mort,type='mortality',label='China',name='male')
+data2 = read.table ('Chinamortalitymale.txt', header = F, sep = '')
+data2pop = read.table ('Chinamortalitymalepop.txt', header = F, sep = '')
+ages.mort = 0:90
+years.mort = 1994:2010
+China.mort.male = demogdata (data2, data2pop, ages.mort, years.mort, type = 'mortality', label = 'China', name = 'male')
 
 ## China female mortality data
 data3<-read.table('Chinamortalityfemale.txt',header=F,sep='')
