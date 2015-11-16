@@ -28,6 +28,7 @@ library (rgl)
 par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 
 source("data.R")
+source("loss.R")
 
 ## descriptive plot
 # plot kt of 36 countries including China
