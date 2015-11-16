@@ -11,12 +11,13 @@
 # Keywords:    nonparametric smoothing, parametric modeling, common trend,
 #              mortality, Lee-Carter method, multi-populations
 # ------------------------------------------------------------------------------
-# See also:    twopop.R
+# See also:    twopop.R, data.R
 # ------------------------------------------------------------------------------
 # Author:      Lei Fang
 # ------------------------------------------------------------------------------
 
 rm(list=ls(all=TRUE))
+# set the work directory
 setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 
 # install packages
@@ -31,7 +32,7 @@ source("data.R")
 ## descriptive plot
 # plot kt of 36 countries including China
 plot (kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab ="kt")
-for(i in 1:34)
+for(i in 1: (loop1 - 2))
 {
   lines (eval (parse (text = paste ("kt.", names[i], ".female", sep = ""))), col = i)
 }
@@ -42,7 +43,7 @@ lines (kt.China.female, col = "black", lwd = 3)
 
 #### initial setting
 ### nonparametric smoothing 36 countries including China
-for(i in 1:35)
+for(i in 1: (loop1 - 1))
 {
   kt = eval (parse (text = paste ("kt.", names[i], ".female", sep = "")))
   t.temp = eval (parse (text = paste (names[i])))
@@ -60,7 +61,7 @@ sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
 
 ## plot smoothed kt of 36 countries including China
 plot (Sweden$year, sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
-for (i in 1:34)
+for (i in 1: (loop1 - 2))
 {
   lines (eval (parse (text = paste (names[i])))$year,
         eval (parse (text = paste ("sm.kt.", names[i], ".female", sep = ""))), col = i)
@@ -90,7 +91,7 @@ reference = ts (reference, start = 1751, frequency = 1)
 
 ## plot the reference curve among all 36 smoothed curves
 plot (Sweden$year, sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
-for (i in 1:34)
+for (i in 1: (loop1 - 2))
 {
   lines (eval (parse (text = paste (names[i])))$year,
         eval (parse (text = paste("sm.kt.", names[i], ".female", sep = ""))), col = i)
@@ -115,7 +116,7 @@ loss = function (theta, t, kt, t.reference, kt.reference) {
 
 t.reference = 1751:2014
 kt.reference = reference
-for (i in 1:35)
+for (i in 1: (loop1 - 1))
 {
   # nonlinear optimization
   #if (max (eval (parse (text = paste (names[i])))$year) <= 2011)
@@ -138,7 +139,7 @@ out.China = optim (theta0, loss, gr = NULL, years.mort, sm.kt.China.female,
 theta0.China.female = out.China$par
 
 ## test of theta (need set up criteron for next loop)
-for (i in 1:36)
+for (i in 1: loop1)
 {
   nam15 = paste ("error.theta", names[i], "female", sep = ".")
   temp4 = mean ((eval (parse (text = paste ("theta0", names[i], "female", sep = ".")))[1] - theta0[1])^2,
@@ -161,7 +162,7 @@ loss = function (theta, t, kt, t.reference, kt.reference) {
   return (mu)
 }
 
-for (i in 1:35)
+for (i in 1: (loop1 - 1))
 {
   nam13 = paste ("test", names[i], sep = ".")
   assign (nam13, loss (eval (parse (text = paste ("theta0", names[i], "female", sep = "."))), eval (parse (text = paste (names[i])))$year,
@@ -171,7 +172,7 @@ for (i in 1:35)
 test.China = loss (theta0.China.female, years.mort, sm.kt.China.female, t.reference, kt.reference )
 ## plot shifted kt of 36 countries including China
 plot (reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red")
-for (i in 1:35) 
+for (i in 1: (loop1 -1)) 
 {
   lines (eval (parse (text = paste (names[i])))$year,
         eval (parse (text = paste ("test", names[i], sep = "."))), col = i)
@@ -179,7 +180,7 @@ for (i in 1:35)
 lines (years.mort, test.China, col = "black", lwd = 3)
 
 ## error between shifted curve and previous one (need set up criteron for next loop)
-for (i in 1:36)
+for (i in 1: loop1)
 {
   nam16 = paste ("error.curve", names[i], "female", sep = ".")
   temp5 = mean ((eval (parse (text = paste ("test", names[i], sep = "."))) - eval (parse (text = paste ("sm.kt.", names[i], ".female", sep = ""))))^2)
@@ -197,12 +198,12 @@ for (i in 1:36)
 # standardize theta
 theta.matrix = matrix (rep (0, 144), 36, 4)
 theta.matrix[1,] = theta0.Australia.female
-for (i in 2:36)
+for (i in 2: loop1)
 {
   theta.matrix[i,] = theta.matrix[i-1,] + eval (parse (text = paste ("theta0", names[i], "female", sep = ".")))
   }
 theta.temp = theta.matrix[36,]
-for (i in 1:36)
+for (i in 1: loop1)
 {
   nam8 = paste ("theta0", names[i], "female1", sep = ".")
   assign (nam8, eval (parse (text = paste ("theta0", names[i], "female", sep = ".")))[1] / theta.temp[1])
@@ -222,7 +223,7 @@ g = function (theta2, theta3, t, kt) {
   return (mu)
 }
 
-for (i in 1:35)
+for (i in 1: (loop1 -1))
 {
   nam12 = paste ("g", i, sep = "")
   assign (nam12, g (eval (parse (text = paste ("theta0", names[i], "female", sep = ".")))[2],

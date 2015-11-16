@@ -1,3 +1,20 @@
+# ------------------------------------------------------------------------------
+# Project:     Mortality Model for Multip-populations: A Semiparametric 
+#              Comparison Approach
+# ------------------------------------------------------------------------------
+# Quantlet:    data.R
+# ------------------------------------------------------------------------------
+# Description: Read data from Human Mortality Database.
+# ------------------------------------------------------------------------------
+# Keywords:    Human Mortality Database, mortality, Lee-Carter method,
+#              multi-populations
+# ------------------------------------------------------------------------------
+# See also:    twopop.R, multipop.R
+# ------------------------------------------------------------------------------
+# Author:      Lei Fang
+# ------------------------------------------------------------------------------
+
+
 ## read data sets
 # China
 # mortality data
@@ -40,7 +57,8 @@ names = c ("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRep
            "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Switzerland",
            "Taiwan","UnitedKingdom","USA","Sweden","China")
 
-for (i in 1:35) {
+loop1 = length(names)
+for (i in 1:(loop1 - 1)) {
   nam1 = paste (names [i] )
   assign (nam1, hmd.mx (shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i]))
   temp1 = hmd.mx (shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i])
