@@ -231,4 +231,4 @@ for (i in 1: (loop1 -1))
                  eval (parse (text = paste ("theta0", names[i], "female", sep = ".")))[3], eval (parse (text = paste (names[i])))$year,
                  eval (parse (text = paste ("kt.", names[i], ".female", sep = "")))))
 }
-
+ 
