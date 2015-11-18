@@ -9,7 +9,7 @@
 # Keywords:    Human Mortality Database, mortality, Lee-Carter method,
 #              multi-populations
 # ------------------------------------------------------------------------------
-# See also:    twopop.R, multipop.R
+# See also:    twopop.R, multipop.R, optimization.R, referencecurve.R
 # ------------------------------------------------------------------------------
 # Author:      Lei Fang
 # ------------------------------------------------------------------------------
@@ -61,8 +61,8 @@ names = c ("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRep
 loop1 = length(names)
 for (i in 1:(loop1 - 1)) {
   nam1 = paste (names [i] )
-  assign (nam1, hmd.mx (shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i])) # read data from HMD
-  temp1 = hmd.mx (shortnames[i], "fanglei@hu-berlin.de", "1440177160", names[i]) # accound and password
+  assign (nam1, hmd.mx (shortnames[i], "account", "password", names[i])) # read data from HMD
+  temp1 = hmd.mx (shortnames[i], "account", "password", names[i]) # accound and password
   nam2 = paste (names[i], "lca.female", sep = ".")
   assign (nam2, lca (temp1, series = "female", adjust = "dt", interpolate = TRUE)) # Lee-Carter method
   temp2 = lca (temp1, series = "female", adjust = "dt", interpolate = TRUE)
