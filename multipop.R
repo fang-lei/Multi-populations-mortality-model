@@ -28,7 +28,8 @@ library (rgl)
 par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 
 source("data.R")
-source("loss.R")
+source("optimization.R")
+source("referencecurve.R")
 
 ## descriptive plot
 # plot kt of 36 countries including China
@@ -39,7 +40,6 @@ for(i in 1: (loop1 - 2))
 }
 lines (kt.China.female, col = "black", lwd = 3)
 
-
 ##### common trend
 
 #### initial setting
@@ -47,29 +47,28 @@ lines (kt.China.female, col = "black", lwd = 3)
 for(i in 1: (loop1 - 1))
 {
   kt = eval (parse (text = paste ("kt.", names[i], ".female", sep = "")))
-  t.temp = eval (parse (text = paste (names[i])))
-  t = t.temp$year
+  t = eval (parse (text = paste (names[i])))$year
   d = data.frame(kt,t)
   sm = locpol (kt~t, d, kernel = EpaK, xeval = t) # smooth kt
   nam6 = paste ("sm.kt", names[i], "female", sep = ".")
   temp6 = ts (sm$lpFit[,2], start = t[1], frequency = 1)
   assign (nam6, temp6)
 }
+
 ## smooth China female data
 d = data.frame (kt.China.female, years.mort)
 sm = locpol (kt.China.female~years.mort, d, kernel = EpaK, xeval = years.mort)
 sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
 
 ## plot smoothed kt of 36 countries including China
-plot (Sweden$year, sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
+plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
 for (i in 1: (loop1 - 2))
 {
-  lines (eval (parse (text = paste (names[i])))$year,
-        eval (parse (text = paste ("sm.kt.", names[i], ".female", sep = ""))), col = i)
+  lines (eval (parse (text = paste ("sm.kt.", names[i], ".female", sep = ""))), col = i)
 }
-lines (years.mort, sm.kt.China.female, col = "black", lwd = 3)
+lines (sm.kt.China.female, col = "black", lwd = 3)
 
-#### starting values of thetas
+#### intial values of thetas
 
 ### set up the initial reference curve based on 17 countries Austrila, Austria, Bulgaria,
 ### Canada, Denmark, Finland, France, Iceland, Italy, Japan, Netherland, Norway,
@@ -81,23 +80,23 @@ names17 = c ("Australia","Austria","Bulgaria","Canada",
         "Spain","Switzerland",
         "UnitedKingdom","USA","Sweden")
 merge1 = sm.kt.Australia.female
-for (i in 1:16)
+loop2 = length (names17)
+for (i in 1: (loop2 -1))
 {
-  nam14 = paste ("merge", i+1, sep = "")
+  nam7 = paste ("merge", i+1, sep = "")
   temp3 = merge.zoo (eval (parse (text = paste("merge", i, sep = ""))), eval (parse (text = paste ("sm.kt.", names17[i+1], ".female", sep = ""))))
-  assign (nam14, temp3)
+  assign (nam7, temp3)
 }
 reference0 = rowMeans (merge17, na.rm = TRUE)
-reference = ts (reference, start = 1751, frequency = 1)
+reference = ts (reference0, start = Sweden$year[1], frequency = 1)
 
 ## plot the reference curve among all 36 smoothed curves
-plot (Sweden$year, sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
+plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt")
 for (i in 1: (loop1 - 2))
 {
-  lines (eval (parse (text = paste (names[i])))$year,
-        eval (parse (text = paste("sm.kt.", names[i], ".female", sep = ""))), col = i)
+  lines (eval (parse (text = paste("sm.kt.", names[i], ".female", sep = ""))), col = i)
 }
-lines (years.mort, sm.kt.China.female, col = "black", lwd = 3)
+lines (sm.kt.China.female, col = "black", lwd = 3)
 lines (reference, lwd = 4, col = "red")
 
 ### find the optimal initial theta based on the reference curve
