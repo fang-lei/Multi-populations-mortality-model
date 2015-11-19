@@ -122,3 +122,13 @@ for (i in 1: loop2)
   lines (eval (parse (text = paste ("shift.kt", names17[i], 0, sep = "."))), col = i)
 }
 
+# theta.matrix
+l = list()
+for ( i in 1:loop2) {
+  l[[i]] = c (eval (parse (text = paste ("optimal.theta", names17[i], 0, sep = "."))))
+}
+optimal.theta.matrix = do.call(rbind,l)
+
+# updated reference curve / common trend (call referencecurve.R)
+kt.matrix = merge17
+referencecurve(optimal.theta.matrix, kt.matrix)
