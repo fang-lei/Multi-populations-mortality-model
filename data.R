@@ -9,7 +9,8 @@
 # Keywords:    Human Mortality Database, mortality, Lee-Carter method,
 #              multi-populations
 # ------------------------------------------------------------------------------
-# See also:    twopop.R, multipop.R, optimization.R, referencecurve.R
+# See also:    twopop.R, multipop.R, optimization.R, referencecurve.R, 
+#              normalization.R
 # ------------------------------------------------------------------------------
 # Author:      Lei Fang
 # ------------------------------------------------------------------------------

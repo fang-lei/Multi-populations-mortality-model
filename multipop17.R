@@ -11,7 +11,8 @@
 # Keywords:    nonparametric smoothing, parametric modeling, common trend,
 #              mortality, Lee-Carter method, multi-populations
 # ------------------------------------------------------------------------------
-# See also:    twopop.R, data.R, optimization.R, referencecurve.R
+# See also:    twopop.R, data.R, optimization.R, referencecurve.R, 
+#              normalization.R
 # ------------------------------------------------------------------------------
 # Author:      Lei Fang
 # ------------------------------------------------------------------------------
@@ -29,11 +30,13 @@ par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 
 source("data.R")
 source("optimization.R")
+source("normalization.R")
 source("referencecurve.R")
 
 ## descriptive plot
 # plot kt of 36 countries including China
-plot (kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab ="kt", main = "Original Kt (36 countries)")
+plot (kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab ="kt", 
+      main = "Original Kt (36 countries)")
 for(i in 1: (loop1 - 2))
 {
   lines (eval (parse (text = paste ("kt.", names[i], ".female", sep = ""))), col = i)
@@ -61,7 +64,8 @@ sm = locpol (kt.China.female~years.mort, d, kernel = EpaK, xeval = years.mort)
 sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
 
 ## plot smoothed kt of 36 countries including China
-plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", main = "Smoothed Kt (36 countries)")
+plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
+      main = "Smoothed Kt (36 countries)")
 for (i in 1: (loop1 - 2))
 {
   lines (eval (parse (text = paste ("sm.kt.", names[i], ".female", sep = ""))), col = i)
@@ -85,14 +89,16 @@ loop2 = length (names17)
 for (i in 1: (loop2 -1))
 {
   nam7 = paste ("merge", i+1, sep = "")
-  temp3 = merge.zoo (eval (parse (text = paste("merge", i, sep = ""))), eval (parse (text = paste ("sm.kt.", names17[i+1], ".female", sep = ""))))
+  temp3 = merge.zoo (eval (parse (text = paste("merge", i, sep = ""))), 
+                     eval (parse (text = paste ("sm.kt.", names17[i+1], ".female", sep = ""))))
   assign (nam7, temp3)
 }
 reference0 = rowMeans (merge17, na.rm = TRUE)
 reference = ts (reference0, start = Sweden$year[1], frequency = 1)
 
 ## plot the reference curve among all 17 smoothed curves
-plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", main = "Reference Curve vs. Smoothed Kt (17 countries)")
+plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
+      main = "Reference Curve vs. Smoothed Kt (17 countries)")
 for (i in 1: (loop2 - 1))
 {
   lines (eval (parse (text = paste("sm.kt.", names[i], ".female", sep = ""))), col = i)
@@ -116,19 +122,27 @@ for ( i in 1:loop2) {
 }
 
 ## plot shifted kt of 17 countries and the initial reference curve
-plot (kt.reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red", main = "Reference Curve vs. Shifted Kt (17 countries): step 0")
+plot (kt.reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red", 
+      main = "Reference Curve vs. Shifted Kt (17 countries): step 0")
 for (i in 1: loop2) 
 {
   lines (eval (parse (text = paste ("shift.kt", names17[i], 0, sep = "."))), col = i)
 }
 
-# theta.matrix
+# construct optimal.theta.matrix and normalize optimal theta
 l = list()
 for ( i in 1:loop2) {
   l[[i]] = c (eval (parse (text = paste ("optimal.theta", names17[i], 0, sep = "."))))
 }
 optimal.theta.matrix = do.call(rbind,l)
+normal.theta.matrix = normalization (optimal.theta.matrix)
 
 # updated reference curve / common trend (call referencecurve.R)
-kt.matrix = merge17
-referencecurve(optimal.theta.matrix, kt.matrix)
+
+for (i in 1: loop2)
+{
+  nam15 = paste ("g", i, sep = "")
+  assign (nam15, referencecurve (normal.theta.matrix[i, 2],
+                    normal.theta.matrix[i, 3], 
+                    eval (parse (text = paste("sm.kt.", names17[i], ".female", sep = "")))))
+}

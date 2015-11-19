@@ -8,7 +8,7 @@
 # ------------------------------------------------------------------------------
 # Keywords:    optimization, mortality, Lee-Carter method, smoothing
 # ------------------------------------------------------------------------------
-# See also:    twopop.R, multipop.R, data.R, referencecurve.R
+# See also:    twopop.R, multipop.R, data.R, referencecurve.R, normalization.R
 # ------------------------------------------------------------------------------
 # Author:      Lei Fang
 # ------------------------------------------------------------------------------
@@ -31,7 +31,8 @@ optimization = function (theta, kt, kt.reference) {
     out = optim (theta, loss, gr = NULL, t, kt, t.reference, kt.reference, control = list (maxit = 1000)) # optimization
     loss.mse = out$value # loss value from optimization
     optimal.theta = out$par # optimal theta
-    error.theta = mean ((theta - optimal.theta)^2) # error (difference / MSE ) between initail theta and optimal theta, for convergence monitor
+    # error (difference / MSE ) between initail theta and optimal theta, for convergence monitor
+    error.theta = mean ((theta - optimal.theta)^2) 
     # generate the shifted kt based on optiaml theta for plot purpose (comparison of reference curve vs shifted kt)
     dref = data.frame (kt.reference, t.reference)
     sm.t1 = (t - optimal.theta[2]) / optimal.theta[3] # time adjustment
