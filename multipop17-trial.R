@@ -135,14 +135,24 @@ for ( i in 1:loop2) {
   l[[i]] = c (eval (parse (text = paste ("optimal.theta", names17[i], 0, sep = "."))))
 }
 optimal.theta.matrix = do.call(rbind,l)
-normal.theta.matrix = normalization (optimal.theta.matrix)
 
-# updated reference curve / common trend (call referencecurve.R)
-
-for (i in 1: loop2)
+# iteration
+test = 1
+for ( j in 1: test)
 {
-  nam15 = paste ("g", i, sep = "")
-  assign (nam15, referencecurve (normal.theta.matrix[i, 2],
-                                 normal.theta.matrix[i, 3], 
-                                 eval (parse (text = paste("sm.kt.", names17[i], ".female", sep = "")))))
+  merge1 = eval (parse (text = paste ("shift.kt", names17[1], j-1, sep = ".")))
+  for (i in 1: (loop2 -1))
+  {
+    nam7 = paste ("merge", i+1, sep = "")
+    temp3 = merge.zoo (eval (parse (text = paste("merge", i, sep = ""))), 
+                       eval (parse (text = paste ("shift.kt", names17[i+1], j-1, sep = "."))))
+    assign (nam7, temp3)
+  }
+  shift = eval (parse (text = paste ("shift.kt", "Sweden", j-1, sep = ".")))
+  tt = time(shift)[1]
+  nam10 = paste ( "reference", j, seq = "")
+  assign ( nam10, ts(rowMeans (merge17, na.rm = TRUE), 
+                     start = tt, 
+                     frequency = 1))
 }
+
