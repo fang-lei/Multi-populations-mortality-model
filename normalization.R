@@ -18,9 +18,9 @@ normalization = function (theta) {
   for (i in 1: loop2)
   {
     nam10 = paste ("normal.theta", names17[i], 1, sep = ".")
-    assign (nam10, theta[i, 1] / theta.temp[1])
+    assign (nam10, loop2*theta[i, 1] / theta.temp[1])
     nam11 = paste ("normal.theta", names17[i], 3, sep = ".")
-    assign (nam11, theta[i, 3] / theta.temp[3])
+    assign (nam11, loop2*theta[i, 3] / theta.temp[3])
     nam12 = paste ("normal.theta", names17[i], 2, sep = ".")
     assign (nam12, theta[i, 2] - theta.temp[2]/ loop2)
     nam13 = paste ("normal.theta", names17[i], 4, sep = ".")

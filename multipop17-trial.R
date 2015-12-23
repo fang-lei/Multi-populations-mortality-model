@@ -72,18 +72,17 @@ for (i in 1: (loop1 - 2))
 }
 lines (sm.kt.China.female, col = "black", lwd = 3)
 
-##### pre-test with 17 countries
+##### pre-test with 7 countries
 #### intial values of thetas
 
 ### set up the initial reference curve based on 17 countries Austrila, Austria, Bulgaria,
 ### Canada, Denmark, Finland, France, Iceland, Italy, Japan, Netherland, Norway,
 ### Spain, Sweden, Switzerland, UK and USA
 
-names17 = c ("Australia","Austria","Bulgaria","Canada",
-             "Denmark","Finland","France","Iceland",
-             "Italy","Japan","Netherlands","Norway",
-             "Spain","Switzerland",
-             "UnitedKingdom","USA","Sweden")
+names17 = c ("Australia","Canada",
+             "Denmark","France",
+             "Norway",
+             "Switzerland","Sweden")
 merge1 = sm.kt.Australia.female
 loop2 = length (names17)
 for (i in 1: (loop2 -1))
@@ -93,7 +92,7 @@ for (i in 1: (loop2 -1))
                      eval (parse (text = paste ("sm.kt.", names17[i+1], ".female", sep = ""))))
   assign (nam7, temp3)
 }
-reference0 = rowMeans (merge17, na.rm = TRUE)
+reference0 = rowMeans (merge7, na.rm = TRUE)
 reference = ts (reference0, start = Sweden$year[1], frequency = 1)
 
 ## plot the reference curve among all 17 smoothed curves
@@ -101,25 +100,35 @@ plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab 
       main = "Reference Curve vs. Smoothed Kt (17 countries)")
 for (i in 1: (loop2 - 1))
 {
-  lines (eval (parse (text = paste("sm.kt.", names[i], ".female", sep = ""))), col = i)
+  lines (eval (parse (text = paste("sm.kt.", names17[i], ".female", sep = ""))), col = i)
 }
 lines (reference, lwd = 4, col = "red")
 
 ### find the optimal initial theta based on the reference curve
-theta0 = c (1,0,1,0)
+theta0 = matrix(rep(c (1,0,1,0),loop2),loop2,4,byrow = TRUE)
 kt.reference = reference
+results=matrix(NA,loop2,6) # c(theta1,theta2,theta3,theta4, loss, convergence)
+pdf(file="1.pdf", onefile=TRUE, paper="a4r")
 for ( i in 1:loop2) {
   kt = eval (parse (text = paste ("sm.kt.", names17[i], ".female", sep = "")))
-  temp4 = optimization (theta0, kt, kt.reference)
-  nam9 = paste( "loss.mse", names17[i], 0, sep = ".")
-  assign (nam9, temp4[[1]])
-  nam10 = paste( "optimal.theta", names17[i], 0, sep = ".")
-  assign (nam10, temp4[[2]])
-  nam11 = paste( "error.theta", names17[i], 0, sep = ".")
-  assign (nam11, temp4[[3]])
+  tt = time(kt)
+  ltt = length(tt)
+  temp4 = optimization (theta0[i,], kt, kt.reference)
+  results[i,] = temp4[[1]]
   nam12 = paste( "shift.kt", names17[i], 0, sep = ".")
-  assign (nam12, temp4[[4]])
+  assign (nam12, temp4[[3]])
+  plot(eval (parse (text = paste ("kt.", names17[i], ".female", sep = ""))),ylim = c(-250,150), xlim = c(1750,2020),type ="p", xlab = "Time", ylab = "kt",main=paste(names17[i], tt[1], '--', tt[ltt]))
+  lines(kt, col=2)  # sm.kt
+  lines(kt.reference, col=4, lwd=2) # reference
+  lines(temp4[[2]], col=5, lty=5) #
+  lines(temp4[[3]], col=5, lwd=2) #
+  
+  abline(v=temp4[[4]], col="gray", lty=5)
+  abline(v=temp4[[5]], col="gray", lty=5)
+  legend("topright", legend=c("kt", "sm.kt", "k0", "kt.hat"), col=c(1,2,4,5), lty=1)
 }
+dev.off()
+results
 
 ## plot shifted kt of 17 countries and the initial reference curve
 plot (kt.reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red", 
@@ -129,30 +138,43 @@ for (i in 1: loop2)
   lines (eval (parse (text = paste ("shift.kt", names17[i], 0, sep = "."))), col = i)
 }
 
+
 # construct optimal.theta.matrix and normalize optimal theta
-l = list()
-for ( i in 1:loop2) {
-  l[[i]] = c (eval (parse (text = paste ("optimal.theta", names17[i], 0, sep = "."))))
-}
-optimal.theta.matrix = do.call(rbind,l)
+optimal.theta.matrix = results[,1:4]
+standard.optimal.theta.matrix = normalization(optimal.theta.matrix)
 
-# iteration
-test = 1
-for ( j in 1: test)
+# construct new reference curve
+for (i in 1: loop2)
 {
-  merge1 = eval (parse (text = paste ("shift.kt", names17[1], j-1, sep = ".")))
-  for (i in 1: (loop2 -1))
-  {
-    nam7 = paste ("merge", i+1, sep = "")
-    temp3 = merge.zoo (eval (parse (text = paste("merge", i, sep = ""))), 
-                       eval (parse (text = paste ("shift.kt", names17[i+1], j-1, sep = "."))))
-    assign (nam7, temp3)
-  }
-  shift = eval (parse (text = paste ("shift.kt", "Sweden", j-1, sep = ".")))
-  tt = time(shift)[1]
-  nam10 = paste ( "reference", j, seq = "")
-  assign ( nam10, ts(rowMeans (merge17, na.rm = TRUE), 
-                     start = tt, 
-                     frequency = 1))
+  nam13 = paste ("shift.kt", names17[i], 1, sep = ".")
+  assign(nam13, referencecurve(standard.optimal.theta.matrix[i,2], 
+                               standard.optimal.theta.matrix[i,3],
+                               eval (parse (text = paste ("sm.kt.", names17[i], ".female", sep = "")))))
 }
 
+t.all=NULL
+kt.all=NULL
+for (i in 1:loop2){
+  kt = eval (parse (text = paste ("shift.kt", names17[i], 1, sep = ".")))
+  t = time(eval (parse (text = paste ("shift.kt", names17[i], 1, sep = "."))))
+  t.all=c(t.all, t)
+  kt.all=c(kt.all, kt)
+}
+d.all=data.frame(t=t.all, kt=kt.all)
+tgrid=unique(t.all)
+sm.all=locpol(kt~t,d.all,kernel = EpaK, xeval = tgrid) # smooth kt
+sm.all.hat=sm.all$lpFit[,2]
+
+t.reference1=tgrid
+kt.reference1=sm.all.hat
+
+kt.reference1= ts (kt.reference1, start = t.reference1[1], frequency = 1)
+
+## plot the reference curve among all 17 smoothed curves
+plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
+      main = "Reference Curve vs. Smoothed Kt (17 countries)")
+for (i in 1: (loop2 - 1))
+{
+  lines (eval (parse (text = paste("sm.kt.", names17[i], ".female", sep = ""))), col = i)
+}
+lines (reference.1, lwd = 4, col = "red")
