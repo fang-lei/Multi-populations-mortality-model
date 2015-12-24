@@ -152,23 +152,16 @@ for (i in 1: loop2)
                                eval (parse (text = paste ("sm.kt.", names17[i], ".female", sep = "")))))
 }
 
-t.all=NULL
-kt.all=NULL
-for (i in 1:loop2){
-  kt = eval (parse (text = paste ("shift.kt", names17[i], 1, sep = ".")))
-  t = time(eval (parse (text = paste ("shift.kt", names17[i], 1, sep = "."))))
-  t.all=c(t.all, t)
-  kt.all=c(kt.all, kt)
+merge1.1 = shift.kt.Australia.1
+for (i in 1: (loop2 -1))
+{
+  nam7 = paste ("merge1", i+1, sep = ".")
+  temp3 = merge.zoo (eval (parse (text = paste("merge1", i, sep = "."))), 
+                     eval (parse (text = paste ("shift.kt", names17[i+1], 1, sep = "."))))
+  assign (nam7, temp3)
 }
-d.all=data.frame(t=t.all, kt=kt.all)
-tgrid=unique(t.all)
-sm.all=locpol(kt~t,d.all,kernel = EpaK, xeval = tgrid) # smooth kt
-sm.all.hat=sm.all$lpFit[,2]
-
-t.reference1=tgrid
-kt.reference1=sm.all.hat
-
-kt.reference1= ts (kt.reference1, start = t.reference1[1], frequency = 1)
+reference0.1 = rowMeans (merge1.7, na.rm = TRUE)
+reference.1 = ts (reference0.1, start = min(index(merge1.7)), frequency = 1)
 
 ## plot the reference curve among all 17 smoothed curves
 plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
