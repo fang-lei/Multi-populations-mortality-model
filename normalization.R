@@ -15,25 +15,25 @@
 
 normalization = function (theta) {
   theta.temp = colSums(theta)
-  for (i in 1: loop2)
+  for (i in 1: loop.31)
   {
-    nam10 = paste ("normal.theta", names17[i], 1, sep = ".")
-    assign (nam10, loop2*theta[i, 1] / theta.temp[1])
-    nam11 = paste ("normal.theta", names17[i], 3, sep = ".")
-    assign (nam11, loop2*theta[i, 3] / theta.temp[3])
-    nam12 = paste ("normal.theta", names17[i], 2, sep = ".")
-    assign (nam12, theta[i, 2] - theta.temp[2]/ loop2)
-    nam13 = paste ("normal.theta", names17[i], 4, sep = ".")
-    assign (nam13, theta[i, 4] - theta.temp[4]/ loop2)
-    nam14 = paste ("normal.theta", names17[i], sep = ".")
-    assign (nam14, c (eval (parse (text = paste ("normal.theta", names17[i], 1, sep = "."))),
-                      eval (parse (text = paste ("normal.theta", names17[i], 2, sep = "."))),
-                      eval (parse (text = paste ("normal.theta", names17[i], 3, sep = "."))),
-                      eval (parse (text = paste ("normal.theta", names17[i], 4, sep = ".")))))
+    nam10 = paste ("normal.theta", names.31[i], 1, sep = ".")
+    assign (nam10, loop.31*theta[i, 1] / theta.temp[1])
+    nam11 = paste ("normal.theta", names.31[i], 3, sep = ".")
+    assign (nam11, loop.31*theta[i, 3] / theta.temp[3])
+    nam12 = paste ("normal.theta", names.31[i], 2, sep = ".")
+    assign (nam12, theta[i, 2] - theta.temp[2]/ loop.31)
+    nam13 = paste ("normal.theta", names.31[i], 4, sep = ".")
+    assign (nam13, theta[i, 4] - theta.temp[4]/ loop.31)
+    nam14 = paste ("normal.theta", names.31[i], sep = ".")
+    assign (nam14, c (eval (parse (text = paste ("normal.theta", names.31[i], 1, sep = "."))),
+                      eval (parse (text = paste ("normal.theta", names.31[i], 2, sep = "."))),
+                      eval (parse (text = paste ("normal.theta", names.31[i], 3, sep = "."))),
+                      eval (parse (text = paste ("normal.theta", names.31[i], 4, sep = ".")))))
   }
   ll = list()
-  for ( i in 1:loop2) {
-    ll[[i]] = c (eval (parse (text = paste ("normal.theta", names17[i], sep = "."))))
+  for ( i in 1:loop.31) {
+    ll[[i]] = c (eval (parse (text = paste ("normal.theta", names.31[i], sep = "."))))
   }
   normal.theta = do.call(rbind,ll)
   return ( normal.theta )

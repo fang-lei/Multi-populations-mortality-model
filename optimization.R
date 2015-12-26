@@ -10,7 +10,7 @@
 # ------------------------------------------------------------------------------
 # See also:    twopop.R, multipop.R, data.R, referencecurve.R, normalization.R
 # ------------------------------------------------------------------------------
-# Author:      Lei Fang
+# Author:      Lei Fang, Juhyun Park
 # ------------------------------------------------------------------------------
 
 optimization = function (theta, kt, kt.reference) {

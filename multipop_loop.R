@@ -91,7 +91,7 @@ for (i in 1: (loop.31 -1))
   assign (nam7, temp3)
 }
 reference0 = rowMeans (merge31, na.rm = TRUE)
-reference = ts (reference0, start = Sweden$year[1], frequency = 1)
+reference0 = ts (reference0, start = Sweden$year[1], frequency = 1)
 
 ## plot the reference curve among all 31 smoothed curves
 plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
@@ -102,25 +102,31 @@ for (i in 1: (loop.31 - 1))
 }
 lines (reference, lwd = 4, col = "red")
 
-### find the optimal initial theta based on the reference curve
+
+##### begin loop 
 theta0 = matrix(rep(c (1,0,1,0),loop.31),loop.31,4,byrow = TRUE)
-kt.reference = reference
+iteration = 2
+for (j in 1 : iteration)
+{
+### find the optimal initial theta based on the reference curve
+theta = eval (parse (text = paste ("theta", j-1, sep = "")))
+kt.reference = eval (parse (text = paste ("reference", j-1, sep = "")))
 results=matrix(NA,loop.31,6) # c(theta1,theta2,theta3,theta4, loss, convergence)
 for ( i in 1:loop.31) {
   kt = eval (parse (text = paste ("sm.kt.", names.31[i], ".female", sep = "")))
   tt = time(kt)
   ltt = length(tt)
-  temp4 = optimization (theta0[i,], kt, kt.reference)
+  temp4 = optimization (theta[i,], kt, kt.reference)
   results[i,] = temp4[[1]]
-  nam12 = paste( "shift.kt", names.31[i], 0, sep = ".")
+  nam12 = paste( "shift.kt", names.31[i], j, sep = ".")
   assign (nam12, temp4[[3]])
-  nam15 = paste( "mu", names.31[i], 0, sep = ".")
+  nam15 = paste( "mu", names.31[i], j, sep = ".")
   assign (nam15, temp4[[2]])
-  pdf(paste("plot_",i,".pdf",sep=""))
+  pdf(paste("plot_",j,"_",i,".pdf",sep=""))
   par(mar=c(5, 5, 2, 2))
   plot(eval (parse (text = paste ("kt.", names.31[i], ".female", sep = ""))),ylim = c(-250,150), 
        xlim = c(1750,2020),type ="p", xlab = "Time", ylab = "kt",
-       main=paste(names.31[i], tt[1], '--', tt[ltt]))
+       main=paste(names.31[i], tt[1], '--', tt[ltt], ':step', j))
   lines(kt, col=2)  # sm.kt
   lines(kt.reference, col=4, lwd=2) # reference
   lines(temp4[[2]], col=5, lty=5) #
@@ -131,14 +137,17 @@ for ( i in 1:loop.31) {
   legend("topright", legend=c("kt", "sm.kt", "k0", "kt.hat"), col=c(1,2,4,5), lty=1)
   dev.off()
 }
-results
+nam16 = paste ( "results", j, sep = "")
+assign( nam16, results)
+nam18 = paste ( "theta", j, sep = "")
+assign( nam18, results[,1:4])
 
-## plot shifted kt of 31 countries and the initial reference curve
+## plot shifted kt of 31 countries and the reference curve of previous step
 plot (kt.reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red", 
-      main = "Reference Curve vs. Shifted Kt (31 countries): step 1")
+      main = paste('Reference Curve vs. Shifted Kt (31 countries): step', j-1 ))
 for (i in 1: loop.31) 
 {
-  lines (eval (parse (text = paste ("shift.kt", names.31[i], 0, sep = "."))), col = i)
+  lines (eval (parse (text = paste ("shift.kt", names.31[i], j, sep = "."))), col = i)
 }
 
 
@@ -149,28 +158,33 @@ standard.optimal.theta.matrix = normalization(optimal.theta.matrix)
 # construct new reference curve
 for (i in 1: loop.31)
 {
-  nam13 = paste ("shift.kt", names.31[i], 1, sep = ".")
+  nam13 = paste ("shift.kt", names.31[i], "standard", sep = ".")
   assign(nam13, referencecurve(standard.optimal.theta.matrix[i,2], 
                                standard.optimal.theta.matrix[i,3],
                                eval (parse (text = paste ("sm.kt.", names.31[i], ".female", sep = "")))))
 }
 
-merge1.1 = shift.kt.Australia.1
+merge1.1 = shift.kt.Australia.standard
 for (i in 1: (loop.31 -1))
 {
   nam7 = paste ("merge1", i+1, sep = ".")
   temp3 = merge.zoo (eval (parse (text = paste("merge1", i, sep = "."))), 
-                     eval (parse (text = paste ("shift.kt", names.31[i+1], 1, sep = "."))))
+                     eval (parse (text = paste ("shift.kt", names.31[i+1], "standard", sep = "."))))
   assign (nam7, temp3)
 }
-reference0.1 = rowMeans (merge1.31, na.rm = TRUE)
-reference.1 = ts (reference0.1, start = min(index(merge1.31)), frequency = 1)
+reference.temp = rowMeans (merge1.31, na.rm = TRUE)
+nam17 = paste ( "reference", j, sep = "")
+assign( nam17, ts (reference.temp, start = min(index(merge1.31)), frequency = 1))
 
-## plot the reference curve among all 31 smoothed curves
-plot (reference.1, lwd = 4, col = "red", type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
-      main = "Updated Reference Curve vs. Shifted Kt (31 countries): step 1")
+## plot the updated reference curve among all 31 shifted curves
+plot (eval (parse (text = paste ("reference", j, sep = ""))), lwd = 4, 
+      col = "red", type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
+      main = paste ('Updated Reference Curve vs. Shifted Kt (31 countries): step', j))
 for (i in 1: loop.31)
 {
-  lines (eval (parse (text = paste("shift.kt", names.31[i], 0, sep = "."))), col = i)
+  lines (eval (parse (text = paste("shift.kt", names.31[i], j, sep = "."))), col = i)
+  lines (eval (parse (text = paste("sm.kt.", names.31[i], ".female", sep = ""))), col = "grey")
 }
-lines(kt.reference, col = "blue",lwd=3, lty = 5)
+lines(eval (parse (text = paste ("reference", j-1, sep = ""))), col = "blue",lwd=3, lty = 5)
+
+}

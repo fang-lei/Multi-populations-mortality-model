@@ -50,28 +50,28 @@ kt.China.female = China.lca.female$kt
 
 
 # read multi-pop female mortality of 35 countries from Human Mortality Database
-shortnames = c ("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
+shortnames.all = c ("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
                 "DEUTNP","HUN","ISL","IRL","ISR","ITA","JPN","LVA","LTU","LUX","NLD","NZL_NP",
                 "NOR","POL","PRT","RUS","SVK","SVN","ESP","CHE","TWN","GBR_NP","USA","SWE")
-names = c ("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
+names.all = c ("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
            "Denmark","Estonia","Finland","France","Germany","Hungary","Iceland","Ireland","Israel",
            "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
            "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Switzerland",
            "Taiwan","UnitedKingdom","USA","Sweden","China")
 
-loop1 = length(names)
-for (i in 1:(loop1 - 1)) {
-  nam1 = paste (names [i] )
-  assign (nam1, hmd.mx (shortnames[i], "account", "password", names[i])) # read data from HMD
-  temp1 = hmd.mx (shortnames[i], "account", "password", names[i]) # accound and password
-  nam2 = paste (names[i], "lca.female", sep = ".")
+loop.all = length(names.all)
+for (i in 1:(loop.all - 1)) {
+  nam1 = paste (names.all [i] )
+  assign (nam1, hmd.mx (shortnames.all[i], "account", "password", names.all[i])) # read data from HMD
+  temp1 = hmd.mx (shortnames.all[i], "account", "password", names.all[i]) # accound and password
+  nam2 = paste (names.all[i], "lca.female", sep = ".")
   assign (nam2, lca (temp1, series = "female", adjust = "dt", interpolate = TRUE)) # Lee-Carter method
   temp2 = lca (temp1, series = "female", adjust = "dt", interpolate = TRUE)
-  nam3 = paste ("ax", names[i], "female", sep = ".") # ax
+  nam3 = paste ("ax", names.all[i], "female", sep = ".") # ax
   assign (nam3, temp2$ax)
-  nam4 = paste ("bx", names[i], "female", sep = ".") # bx
+  nam4 = paste ("bx", names.all[i], "female", sep = ".") # bx
   assign (nam4, temp2$bx)
-  nam5 = paste ("kt", names[i], "female", sep = ".") # kt
+  nam5 = paste ("kt", names.all[i], "female", sep = ".") # kt
   assign (nam5, temp2$kt)
 }
 
