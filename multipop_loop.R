@@ -105,7 +105,7 @@ lines (reference, lwd = 4, col = "red")
 
 ##### begin loop 
 theta0 = matrix(rep(c (1,0,1,0),loop.31),loop.31,4,byrow = TRUE)
-iteration = 2
+iteration = 5
 for (j in 1 : iteration)
 {
 ### find the optimal initial theta based on the reference curve
