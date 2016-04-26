@@ -25,13 +25,32 @@ setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 library (demography)
 library (locpol)
 library (rgl)
+library(KernSmooth)
+library(sm)
+library(boot)
 
 par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 
 #source("data.R")
+load("~/Desktop/multi-populations model/semipop R/data.RData")
 source("optimization-3.R")
 source("normalization-3.R")
 source("referencecurve.R")
+
+# read multi-pop female mortality of 35 countries from Human Mortality Database
+shortnames.all = c ("AUS","AUT","BLR","BGR","CAN","CHL","CZE","DNK","EST","FIN","FRATNP",
+                    "DEUTNP","HUN","ISL","IRL","ISR","ITA","JPN","LVA","LTU","LUX","NLD","NZL_NP",
+                    "NOR","POL","PRT","RUS","SVK","SVN","ESP","CHE","TWN","GBR_NP","USA","SWE")
+names.all = c ("Australia","Austria","Belarus","Bulgaria","Canada","Chile","CzechRepublic",
+               "Denmark","Estonia","Finland","France","Germany","Hungary","Iceland","Ireland","Israel",
+               "Italy","Japan","Latvia","Lithuania","Luxembourg","Netherlands","NewZealand","Norway",
+               "Poland","Portugal","Russia","Slovakia","Slovenia","Spain","Switzerland",
+               "Taiwan","UnitedKingdom","USA","Sweden","China")
+
+loop.all = length(names.all)
+
+# set bandwidth
+bw.default = 2.5
 
 ## descriptive plot
 # plot kt of 36 countries including China
@@ -52,16 +71,69 @@ for(i in 1: (loop.all - 1))
   kt = eval (parse (text = paste ("kt.", names.all[i], ".female", sep = "")))
   t = eval (parse (text = paste (names.all[i])))$year
   d = data.frame(kt,t)
-  sm = locpol (kt~t, d, kernel = EpaK, xeval = t) # smooth kt
+  
+  # way 1 - locpol: locpol
+  #sm = locpol (kt~t, d, kernel = EpaK, xeval = t, bw = bw.default) # smooth kt
+  #nam6 = paste ("sm.kt", names.all[i], "female", sep = ".")
+  #temp6 = ts (sm$lpFit[,2], start = t[1], frequency = 1)
+  #assign (nam6, temp6)
+  
+  # way 2 - locpol with Cross Validation bandwidth
+  #nam7 = paste ("cvBwSel", names.all[i], "female", sep = ".")
+  #temp7 = regCVBwSelC(t,kt, deg = 1, kernel = EpaK, interval = c(0, 10))
+  #assign (nam7, temp7)
+  #sm = locpol (kt~t, d, kernel = EpaK, xeval = t, bw = temp7) # smooth kt
+  #nam6 = paste ("sm.kt", names.all[i], "female", sep = ".")
+  #temp6 = ts (sm$lpFit[,2], start = t[1], frequency = 1)
+  #assign (nam6, temp6)
+  
+  # way 3 - sm: sm.regression with optimal smoothing parameter
+  h.optimal1 = h.select (t, kt)
+  sm = sm.regression(t, kt, h = h.optimal1, eval.points = t, model = "none", poly.index = 1, display="none")
   nam6 = paste ("sm.kt", names.all[i], "female", sep = ".")
-  temp6 = ts (sm$lpFit[,2], start = t[1], frequency = 1)
+  temp6 = ts (sm$estimate, start = t[1], frequency = 1)
   assign (nam6, temp6)
+  
+  # way 4 - KernSmooth: locpoly
+  #sm = locpoly (t, kt, kernel = EpaK, bandwidth = bw.default, gridsize = length(t), range.x = range(t))
+  #nam6 = paste ("sm.kt", names.all[i], "female", sep = ".")
+  #temp6 = ts (sm$y, start = t[1], frequency = 1)
+  #assign (nam6, temp6)
+  
+  # way 5 - stats: ksmooth
+#   sm = ksmooth (t, kt, kernel = "normal", bandwidth = bw.default, n.points  = length(t), range.x = range(t))
+#   nam6 = paste ("sm.kt", names.all[i], "female", sep = ".")
+#   temp6 = ts (sm$y, start = t[1], frequency = 1)
+#   assign (nam6, temp6)
+  
+  
 }
 
 ## smooth China female data
 d = data.frame (kt.China.female, years.mort)
-sm = locpol (kt.China.female~years.mort, d, kernel = EpaK, xeval = years.mort)
-sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
+
+# way 1 - locpol: locpol
+#sm = locpol (kt.China.female~years.mort, d, kernel = EpaK, xeval = years.mort, bw = bw.default)
+#sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
+
+# way 2 - locpol with Cross Validation bandwidth
+#cvBwSel.China.female = regCVBwSelC(years.mort,kt.China.female, deg = 1, kernel = EpaK, interval = c(0, 10))
+#sm = locpol (kt.China.female~years.mort, d, kernel = EpaK, xeval = years.mort, bw = cvBwSel.China.female)
+#sm.kt.China.female = ts (sm$lpFit[,2], start = 1994, frequency = 1)
+
+# way 3 - sm: sm.regression with optimal smoothing parameter
+h.optimal2 = h.select (years.mort, kt.China.female)
+sm = sm.regression(years.mort, kt.China.female, h = h.optimal2, eval.points = years.mort, model = "none", poly.index = 1, display="none")
+sm.kt.China.female = ts (sm$estimate, start = 1994, frequency = 1)
+
+# way 4 - KernSmooth: locpoly
+#sm = locpoly (years.mort, kt.China.female, kernel = EpaK, bandwidth = bw.default, gridsize = length(years.mort), range.x = range(years.mort))
+#sm.kt.China.female = ts (sm$y, start = 1994, frequency = 1)
+
+# way 5 - stats: ksmooth
+# sm = ksmooth (years.mort, kt.China.female, kernel = "normal", bandwidth = bw.default, n.points  = length(years.mort), range.x = range(years.mort)) 
+# sm.kt.China.female = ts (sm$y, start = 1994, frequency = 1)
+
 
 ## plot smoothed kt of 36 countries including China
 plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
@@ -100,7 +172,7 @@ for (i in 1: loop.31)
 {
   lines (eval (parse (text = paste("sm.kt.", names.31[i], ".female", sep = ""))), col = i)
 }
-lines (reference, lwd = 4, col = "red")
+lines (reference0, lwd = 4, col = "red")
 
 
 ##### begin loop 
@@ -134,7 +206,7 @@ for ( i in 1:loop.31) {
   
   abline(v=temp4[[4]], col="gray", lty=5)
   abline(v=temp4[[5]], col="gray", lty=5)
-  legend("topright", legend=c("kt", "sm.kt", "k0", "kt.hat"), col=c(1,2,4,5), lty=1)
+  #legend("topright", legend=c("kt", "sm.kt", "k0", "kt.hat"), col=c(1,2,4,5), lty=1)
   dev.off()
 }
 nam16 = paste ( "results", j, sep = "")
@@ -161,7 +233,8 @@ for (i in 1: loop.31)
   nam13 = paste ("shift.kt", names.31[i], "standard", sep = ".")
   assign(nam13, referencecurve(standard.optimal.theta.matrix[i,2], 
                                standard.optimal.theta.matrix[i,3],
-                               eval (parse (text = paste ("sm.kt.", names.31[i], ".female", sep = "")))))
+                               eval (parse (text = paste ("sm.kt.", names.31[i], ".female", sep = ""))),
+                               eval (parse (text = paste ("shift.kt", names.31[i], j, sep = ".")))))
 }
 
 merge1.1 = shift.kt.Australia.standard
@@ -173,8 +246,20 @@ for (i in 1: (loop.31 -1))
   assign (nam7, temp3)
 }
 reference.temp = rowMeans (merge1.31, na.rm = TRUE)
+reference.temp.nonsmooth = ts (reference.temp, start = min(index(merge1.31)), frequency = 1)
+t.temp = time(reference.temp.nonsmooth)
+
+## smooth the updated reference curve
+
+# way 3 - sm: sm.regression with optimal smoothing parameter
+temp17 = sm.regression(t.temp, reference.temp.nonsmooth, eval.points = t.temp, model = "none", poly.index = 1, display="none")
 nam17 = paste ( "reference", j, sep = "")
-assign( nam17, ts (reference.temp, start = min(index(merge1.31)), frequency = 1))
+assign( nam17, ts (temp17$estimate, start = t.temp[1], frequency = 1))
+
+# way 5 - stats: ksmooth
+# temp17 = ksmooth(t.temp, reference.temp.nonsmooth, kernel = "normal", bandwidth = bw.default, n.points  = length(t.temp), range.x = range(t.temp))
+# nam17 = paste ( "reference", j, sep = "")
+# assign( nam17, ts (temp17$y, start = t.temp[1], frequency = 1))
 
 ## plot the updated reference curve among all 31 shifted curves
 plot (eval (parse (text = paste ("reference", j, sep = ""))), lwd = 4, 
