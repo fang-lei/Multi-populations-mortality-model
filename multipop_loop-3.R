@@ -162,8 +162,20 @@ for (i in 1: (loop.31 -1))
                      eval (parse (text = paste ("sm.kt.", names.31[i+1], ".female", sep = ""))))
   assign (nam7, temp3)
 }
-reference0 = rowMeans (merge31, na.rm = TRUE)
-reference0 = ts (reference0, start = Sweden$year[1], frequency = 1)
+reference0.temp = rowMeans (merge31, na.rm = TRUE)
+reference0.temp.nonsmooth = ts (reference0.temp, start = Sweden$year[1], frequency = 1)
+t.reference0.temp = time(reference0.temp.nonsmooth)
+
+## smooth the initial reference curve
+
+# way 3 - sm: sm.regression
+reference0.temp.smooth =  sm.regression(t.reference0.temp, reference0.temp.nonsmooth, eval.points = t.reference0.temp, model = "none", poly.index = 1, display="none")
+reference0 = ts (reference0.temp.smooth$estimate, start = t.reference0.temp[1], frequency = 1)
+
+# way 5 - stats: ksmooth
+# reference0.temp.smooth = ksmooth(t.reference0.temp, reference0.temp.nonsmooth, kernel = "normal", bandwidth = bw.default, n.points  = length(t.reference0.temp), range.x = range(t.reference0.temp))
+# reference0 = ts (reference0.temp.smooth$y, start = t.reference0.temp[1], frequency = 1))
+
 
 ## plot the reference curve among all 31 smoothed curves
 plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
@@ -177,8 +189,8 @@ lines (reference0, lwd = 4, col = "red")
 
 ##### begin loop 
 theta0 = matrix(rep(c (1,0,1),loop.31),loop.31,3,byrow = TRUE)
-iteration = 5
-for (j in 1 : iteration)
+iteration = 7
+for (j in 6 : iteration)
 {
 ### find the optimal initial theta based on the reference curve
 theta = eval (parse (text = paste ("theta", j-1, sep = "")))
@@ -251,7 +263,7 @@ t.temp = time(reference.temp.nonsmooth)
 
 ## smooth the updated reference curve
 
-# way 3 - sm: sm.regression with optimal smoothing parameter
+# way 3 - sm: sm.regression
 temp17 = sm.regression(t.temp, reference.temp.nonsmooth, eval.points = t.temp, model = "none", poly.index = 1, display="none")
 nam17 = paste ( "reference", j, sep = "")
 assign( nam17, ts (temp17$estimate, start = t.temp[1], frequency = 1))
