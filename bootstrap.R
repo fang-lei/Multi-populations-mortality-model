@@ -71,3 +71,12 @@ boot.1 = tsboot(boot.data, boot.func, R = 50, l = 12, sim = "fixed")
 boot.1$t # the results of applying statistic to the replicate time series
 boot.1$t0 # the result of statistic(tseries,...{})
 boot.ci(boot.1, type="bca", index=1) # CI 
+
+# test
+test.func = function (m) {
+  mean(m)
+}
+boot.2 = tsboot (boot.data, test.func, R = 50, l = 12, sim = "fixed")
+boot.2$t
+boot.2$t0
+boot.ci(boot.2, index=1) 
