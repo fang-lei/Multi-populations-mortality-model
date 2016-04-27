@@ -9,15 +9,16 @@ library(KernSmooth)
 library(sm)
 library(boot)
 
-#source("data.R")
+#source("data.R") to reduce code-running time from previous procedure (multi_loop-3.R)
 load("~/Desktop/multi-populations model/semipop R/sm_3_loop5.RData")
 
-# bootstrap
-kt.referencet = reference4
-boot.data = kt.China.female
-theta=theta4[31,]
+# bootstrap to resample from China's mortality time series to construct the CI for shape deviation parameters theta
+kt.referencet = reference4 # reference time series curve (unchanged) we use for comparing with resampled China's mortality TS
+boot.data = kt.China.female # original China's mortality TS, from which we are going take TS bootstrap
+theta=theta4[31,] # initial theta values for optimazation
 
-
+# construct the "statistic" function which is needed and very important in 'tsboot'
+# tsboot (tseries, statistic, R, l = NULL, sim = "model",...)
 boot.func = function ( kt) {
   t = time (kt)
   t.reference = time (kt.reference)
@@ -64,7 +65,9 @@ boot.func = function ( kt) {
   result=c(out$par, out$value, out$convergence)
 }
   
+
+# first trial with tsboot with fixed block bootstrap with length 12
 boot.1 = tsboot(boot.data, boot.func, R = 50, l = 12, sim = "fixed")
-boot.1$t
-boot.1$t0
-boot.ci(boot.1, type="bca", index=1)
+boot.1$t # the results of applying statistic to the replicate time series
+boot.1$t0 # the result of statistic(tseries,...{})
+boot.ci(boot.1, type="bca", index=1) # CI 
