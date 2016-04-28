@@ -17,22 +17,6 @@ kt.referencet = reference4 # reference time series curve (unchanged) we use for 
 boot.data = kt.China.female # original China's mortality TS, from which we are going take TS bootstrap
 theta=theta4[31,] # initial theta values for optimazation
 
-# construct the "statistic" function which is needed and very important in 'tsboot'
-# tsboot (tseries, statistic, R, l = NULL, sim = "model",...)
-boot.func = function ( kt) {
-  t = time (kt)
-  t.reference = time (kt.reference)
-  ### parameter estimation
-  conv=1
-  theta0 = theta
-  while(conv!=0) { # check convergence
-    out = optim (theta0, loss, gr = NULL, t, kt, t.reference, kt.reference, control = list (maxit = 1000)) # optimization
-    conv=out$convergence
-    theta0=out$par
-  }  
-  result=c(out$par, out$value, out$convergence)
-}
-  
 ### loss function
 loss = function (theta, t, kt, t.reference, kt.reference) {
   ## assume theta[1]>0, theta[3]>0, if not, take absolute values
@@ -66,6 +50,51 @@ loss = function (theta, t, kt, t.reference, kt.reference) {
   return (mse)
 }
 
+# construct the "statistic" function which is needed and very important in 'tsboot'
+# tsboot (tseries, statistic, R, l = NULL, sim = "model",...)
+boot.func = function ( kt) {
+  t = time (kt)
+  t.reference = time (kt.reference)
+  ### parameter estimation
+  conv=1
+  theta0 = theta
+  while(conv!=0) { # check convergence
+    out = optim (theta0, loss, gr = NULL, t, kt, t.reference, kt.reference, control = list (maxit = 1000)) # optimization
+    conv=out$convergence
+    theta0=out$par
+  }  
+  result=c(out$par, out$value, out$convergence)
+}
+  
+# simulate time series
+bootdata.fit = auto.arima(boot.data)
+sim =500
+plot (boot.data, xlab = "Time", ylab = "Kt", ylim = c(-150,70),col = "blue", lwd =10)
+for ( i in 1:sim) {
+  nam5 = paste ("sim.ts", i, sep = ".")
+  temp5 = simulate(bootdata.fit,nsim = length(boot.data), future = FALSE, bootstrap = TRUE, seed = i)
+  assign(nam5, temp5)
+  lines(temp5, col = "grey") # time series test on plot
+}
+
+# bootstrap
+theta.boot = matrix(rep(c (0,0,0,0,0),sim),sim,5,byrow = TRUE)
+for ( i in 1:sim) {
+  theta.boot[i,] = boot.func(eval (parse (text = paste ("sim.ts", i, sep = "."))))
+}
+
+# plot test
+hist(theta.boot[,1])
+quantile(theta.boot[,1])
+
+# forecast with estimated parameters from bootstrap
+
+
+
+
+
+
+
 # first trial with tsboot with fixed block bootstrap with length 12
 boot.1 = tsboot(boot.data, boot.func, R = 50, l = 12, sim = "fixed")
 boot.1$t # the results of applying statistic to the replicate time series
@@ -74,12 +103,9 @@ boot.ci(boot.1, type="bca", index=1) # CI
 
 # test
 test.func = function (m) {
-  mean(m)
+  m
 }
 boot.2 = tsboot (boot.data, test.func, R = 50, l = 12, sim = "fixed")
 boot.2$t
 boot.2$t0
 boot.ci(boot.2, index=1) 
-
-
-
