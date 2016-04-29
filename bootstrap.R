@@ -88,6 +88,65 @@ hist(theta.boot[,1])
 quantile(theta.boot[,1])
 
 # forecast with estimated parameters from bootstrap
+boot.forecast = function (theta, kt, kt.reference) {
+  t = time (kt)
+  t.reference = time (kt.reference)
+  ### check results on graph
+  theta1=abs(theta[1])
+  theta2=theta[2]
+  theta3=abs(theta[3])
+  
+  sm.t = (t.reference - theta2) /theta3 # time adjustment
+  ## common grid for kt and shifted kt.reference
+  tmin=max(min(t), min(sm.t))
+  tmax=min(max(t), max(sm.t)) 
+  i0=which(t>=tmin & t<=tmax)
+  t0=t[i0]  
+  ## shifted curves (kt.hat)
+  dref=data.frame(sm.t=sm.t, kt.reference=kt.reference)
+  
+  # way 3 - sm: sm.regression with optimal smoothing parameter
+  h.optimal4 = h.select (sm.t, kt.reference)
+  sm = sm.regression(sm.t, kt.reference, h = h.optimal4, eval.points = sm.t, model = "none", poly.index = 1, display="none")
+  mu = theta1 * sm$estimate
+  
+  # way 5 - stats: ksmooth
+  #     sm = ksmooth (sm.t, kt.reference, kernel = "normal", bandwidth = bw.default, n.points = length(sm.t), range.x = range(sm.t))
+  #     mu = theta1 * sm$y
+  
+  mu = ts (mu, start = sm.t[1], frequency = theta3)
+  
+  # way 3 - sm: sm.regression with optimal smoothing parameter
+  h.optimal5 = h.select (sm.t, kt.reference)
+  sm0 = sm.regression(sm.t, kt.reference, h = h.optimal5, eval.points = t0, model = "none", poly.index = 1, display="none")
+  mu0 = theta1 * sm0$estimate
+  
+  
+  # way 5 - stats: ksmooth
+  #     sm0 = ksmooth (sm.t, kt.reference, kernel = "normal", bandwidth = bw.default, n.points = length(t0), range.x = range(t0))
+  #     mu0 = theta1 * sm0$y
+  
+  
+  mu0 = ts (mu0, start = t0[1], frequency = 1)
+  
+  return ( list( mu, mu0,tmin,tmax ))
+}  
+
+# forecast
+plot(forecast(bootdata.fit,h=40,level = 95), xlab = "Time", ylab = "Kt", xlim = c(1828,2050),ylim = c(-200,150))
+lines(kt.referencet, col = "blue", lwd =5)
+lines(boot.data, col = "red", lwd =5)
+for ( i in 1:sim) {
+  temp = boot.forecast (theta.boot[i,1:3], boot.data, kt.reference)
+  nam12 = paste( "shift.kt.boot", i, sep = ".")
+  assign (nam12, temp[[2]])
+  nam15 = paste( "mu.boot", i, sep = ".")
+  assign (nam15, temp[[1]])
+  lines(temp[[2]], col= "green") #
+  lines(temp[[1]], col= "grey") #
+}
+
+
 
 
 
