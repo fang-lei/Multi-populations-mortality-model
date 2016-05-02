@@ -84,8 +84,12 @@ for ( i in 1:sim) {
 }
 
 # plot test
-hist(theta.boot[,1])
+hist(theta.boot[,1],xlab = "theta 1",main = "Histogram of theta 1")
 quantile(theta.boot[,1])
+hist(theta.boot[,2][which(theta.boot[,2]>=-100 & theta.boot[,2]<=100)],xlab = "theta 2",main = "Histogram of theta 2",xlim = c(-50,50),breaks=5)
+quantile(theta.boot[,2])
+hist(theta.boot[,3][which(theta.boot[,3]>=0.8 & theta.boot[,3]<=1.2)],xlab = "theta 3",main = "Histogram of theta 3",xlim = c(0.8,1.2),breaks=5)
+quantile(theta.boot[,3])
 
 # forecast with estimated parameters from bootstrap
 boot.forecast = function (theta, kt, kt.reference) {
@@ -146,25 +150,45 @@ for ( i in 1:sim) {
   lines(temp[[1]], col= "grey") #
 }
 
-
-
-
-
-
-
-
-
-# first trial with tsboot with fixed block bootstrap with length 12
-boot.1 = tsboot(boot.data, boot.func, R = 50, l = 12, sim = "fixed")
-boot.1$t # the results of applying statistic to the replicate time series
-boot.1$t0 # the result of statistic(tseries,...{})
-boot.ci(boot.1, type="bca", index=1) # CI 
-
-# test
-test.func = function (m) {
-  m
+# plot 95% confidence interval
+quan.ts.2010 = matrix(0,1,500)
+for ( i in 1:sim) {
+quan.ts.2010[i] = window(eval (parse (text = paste ("sim.ts", i, sep = "."))),2010)[1]
 }
-boot.2 = tsboot (boot.data, test.func, R = 50, l = 12, sim = "fixed")
-boot.2$t
-boot.2$t0
-boot.ci(boot.2, index=1) 
+
+
+quan.index.10 = matrix(0,1,500)
+for ( i in 1:sim) {
+  if (quan.ts.2010[i] >= quantile(quan.ts.2010,probs = c(0.45,0.55))[1] & quan.ts.2010[i] <= quantile(quan.ts.2010,probs = c(0.45,0.55))[2])
+    quan.index.10[i] = i
+}
+
+quan.index.80 = matrix(0,1,500)
+for ( i in 1:sim) {
+  if (quan.ts.2010[i] >= quantile(quan.ts.2010,probs = c(0.1,0.9))[1] & quan.ts.2010[i] <= quantile(quan.ts.2010,probs = c(0.1,0.9))[2])
+    quan.index.80[i] = i
+}
+
+quan.index.95 = matrix(0,1,500)
+for ( i in 1:sim) {
+  if (quan.ts.2010[i] >= quantile(quan.ts.2010,probs = c(0.05,0.95))[1] & quan.ts.2010[i] <= quantile(quan.ts.2010,probs = c(0.05,0.95))[2])
+    quan.index.95[i] = i
+}
+
+#plot(forecast(bootdata.fit,h=40,level = 95), xlab = "Time", ylab = "Kt", xlim = c(1828,2050),ylim = c(-300,150))
+plot(kt.referencet, col = "black", lwd =5, xlab = "Time", ylab = "Kt", xlim = c(1828,2040),ylim = c(-300,150))
+lines(boot.data, col = "red", lwd =5)
+mu.boot.0 = ts(0,start = 2010, frequency = 1, end = 2010)
+for ( i in quan.index.95) {
+  #lines(eval (parse (text = paste ("shift.kt.boot", i, sep = "."))), col= "green") #
+  lines(window(eval (parse (text = paste ("mu.boot", i, sep = "."))),2008), col= "blue") #
+}
+for ( i in quan.index.80) {
+  #lines(eval (parse (text = paste ("shift.kt.boot", i, sep = "."))), col= "green") #
+  lines(window(eval (parse (text = paste ("mu.boot", i, sep = "."))),2008), col= "grey") #
+}
+for ( i in quan.index.10) {
+  #lines(eval (parse (text = paste ("shift.kt.boot", i, sep = "."))), col= "green") #
+  lines(window(eval (parse (text = paste ("mu.boot", i, sep = "."))),2008), col= "yellow") #
+}
+lines(kt.referencet, col = "black", lwd =5)
