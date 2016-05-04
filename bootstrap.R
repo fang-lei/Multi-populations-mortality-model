@@ -169,17 +169,17 @@ for ( i in 1:sim) {
     quan.index.80[i] = i
 }
 
-quan.index.95 = matrix(0,1,500)
+quan.index.90 = matrix(0,1,500)
 for ( i in 1:sim) {
   if (quan.ts.2010[i] >= quantile(quan.ts.2010,probs = c(0.05,0.95))[1] & quan.ts.2010[i] <= quantile(quan.ts.2010,probs = c(0.05,0.95))[2])
-    quan.index.95[i] = i
+    quan.index.90[i] = i
 }
 
 #plot(forecast(bootdata.fit,h=40,level = 95), xlab = "Time", ylab = "Kt", xlim = c(1828,2050),ylim = c(-300,150))
 plot(kt.referencet, col = "black", lwd =5, xlab = "Time", ylab = "Kt", xlim = c(1828,2040),ylim = c(-300,150))
 lines(boot.data, col = "red", lwd =5)
 mu.boot.0 = ts(0,start = 2010, frequency = 1, end = 2010)
-for ( i in quan.index.95) {
+for ( i in quan.index.90) {
   #lines(eval (parse (text = paste ("shift.kt.boot", i, sep = "."))), col= "green") #
   lines(window(eval (parse (text = paste ("mu.boot", i, sep = "."))),2008), col= "blue") #
 }
@@ -192,3 +192,4 @@ for ( i in quan.index.10) {
   lines(window(eval (parse (text = paste ("mu.boot", i, sep = "."))),2008), col= "yellow") #
 }
 lines(kt.referencet, col = "black", lwd =5)
+lines(mu.China.4, col=5, lty=2, lwd = 4)
