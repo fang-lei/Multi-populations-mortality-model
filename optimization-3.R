@@ -53,9 +53,9 @@ optimization = function (theta, kt, kt.reference) {
         #mu = theta1 * sm$y
         
         # way 5 - stats: ksmooth
-        # sm = ksmooth (sm.t, kt.reference, kernel = "normal", bandwidth = bw.default, n.points = length(t0), range.x = range(t0))
-        # mu = theta1 * sm$y
-        
+#         sm = ksmooth (sm.t, kt.reference, kernel = "normal", bandwidth = bw.default, n.points = length(t0), range.x = range(t0))
+#         mu = theta1 * sm$y
+
         ## mean squared error at common grid points
         mse = mean ((kt[i0]-mu)^2) # mse of kt and the modelled one
       } else { mse=1e9 }

@@ -28,7 +28,7 @@ library (rgl)
 
 par (mar = c (5, 5, 2, 2), cex.axis = 1.5, cex.lab = 2)
 
-source("data.R")
+#source("data.R")
 source("optimization.R")
 source("normalization.R")
 source("referencecurve.R")
@@ -75,14 +75,11 @@ lines (sm.kt.China.female, col = "black", lwd = 3)
 ##### pre-test with 7 countries
 #### intial values of thetas
 
-### set up the initial reference curve based on 17 countries Austrila, Austria, Bulgaria,
-### Canada, Denmark, Finland, France, Iceland, Italy, Japan, Netherland, Norway,
-### Spain, Sweden, Switzerland, UK and USA
+### set up the initial reference curve based on 7 countries Austrila,
+### Canada, Denmark, France, Norway, Sweden, Switzerland
 
-names17 = c ("Australia","Canada",
-             "Denmark","France",
-             "Norway",
-             "Switzerland","Sweden")
+names17 = c ("Australia","Canada","Denmark","France",
+             "Norway","Switzerland","Sweden")
 merge1 = sm.kt.Australia.female
 loop2 = length (names17)
 for (i in 1: (loop2 -1))
@@ -97,7 +94,7 @@ reference = ts (reference0, start = Sweden$year[1], frequency = 1)
 
 ## plot the reference curve among all 17 smoothed curves
 plot (sm.kt.Sweden.female, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", 
-      main = "Reference Curve vs. Smoothed Kt (17 countries)")
+      main = "Reference Curve vs. Smoothed Kt (7 countries)")
 for (i in 1: (loop2 - 1))
 {
   lines (eval (parse (text = paste("sm.kt.", names17[i], ".female", sep = ""))), col = i)
@@ -117,7 +114,11 @@ for ( i in 1:loop2) {
   results[i,] = temp4[[1]]
   nam12 = paste( "shift.kt", names17[i], 0, sep = ".")
   assign (nam12, temp4[[3]])
-  plot(eval (parse (text = paste ("kt.", names17[i], ".female", sep = ""))),ylim = c(-250,150), xlim = c(1750,2020),type ="p", xlab = "Time", ylab = "kt",main=paste(names17[i], tt[1], '--', tt[ltt]))
+  nam15 = paste( "mu", names17[i], 0, sep = ".")
+  assign (nam15, temp4[[2]])
+  plot(eval (parse (text = paste ("kt.", names17[i], ".female", sep = ""))),ylim = c(-250,150), 
+       xlim = c(1750,2020),type ="p", xlab = "Time", ylab = "kt",
+       main=paste(names17[i], tt[1], '--', tt[ltt]))
   lines(kt, col=2)  # sm.kt
   lines(kt.reference, col=4, lwd=2) # reference
   lines(temp4[[2]], col=5, lty=5) #
@@ -132,7 +133,7 @@ results
 
 ## plot shifted kt of 17 countries and the initial reference curve
 plot (kt.reference, type = "l", ylim = c (-250,150), xlab = "Time", ylab = "kt", lwd = 4, col = "red", 
-      main = "Reference Curve vs. Shifted Kt (17 countries): step 0")
+      main = "Reference Curve vs. Shifted Kt (7 countries): step 0")
 for (i in 1: loop2) 
 {
   lines (eval (parse (text = paste ("shift.kt", names17[i], 0, sep = "."))), col = i)
