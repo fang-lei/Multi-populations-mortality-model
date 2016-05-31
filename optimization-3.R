@@ -70,9 +70,7 @@ optimization = function (theta, kt, kt.reference) {
       theta0=out$par
     } 
     
-    temp.par = c(1,1,1)
-    if (out$par[2]>=-200 & out$par[2]<=200) temp.par = out$par
-    else temp.par = theta0
+    if (out$par[2]>=-200 & out$par[2]<=200) temp.par = out$par else temp.par = theta
     result=c(temp.par, out$value, out$convergence)
     
   ### check results on graph
