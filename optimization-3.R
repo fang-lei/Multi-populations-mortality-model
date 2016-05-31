@@ -68,11 +68,15 @@ optimization = function (theta, kt, kt.reference) {
       out = optim (theta0, loss, gr = NULL, t, kt, t.reference, kt.reference, control = list (maxit = 1000)) # optimization
       conv=out$convergence
       theta0=out$par
-    }  
-    result=c(out$par, out$value, out$convergence)
+    } 
+    
+    temp.par = c(1,1,1)
+    if (out$par[2]>=-200 & out$par[2]<=200) temp.par = out$par
+    else temp.par = theta0
+    result=c(temp.par, out$value, out$convergence)
     
   ### check results on graph
-    theta=result[1:4]
+    theta=result[1:3]
     theta1=abs(theta[1])
     theta2=theta[2]
     theta3=abs(theta[3])
