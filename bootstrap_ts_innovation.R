@@ -1,6 +1,8 @@
+rm(list=ls(all=TRUE))
 # set the work directory
 setwd("/Users/lei.fang/Desktop/multi-populations model/semipop R")
 
+options(digits = 4)
 # install packages
 library (demography)
 library (locpol)
@@ -8,6 +10,7 @@ library (rgl)
 library(KernSmooth)
 library(sm)
 library(boot)
+library(tseries)
 
 # source("data.R") to reduce code-running time 
 # from previous procedure (multi_loop-3.R)
@@ -91,25 +94,29 @@ boot.func = function ( kt) {
     conv = out$convergence
     theta0 = out$par
   }  
-  
-  result = c(out$par, out$value, out$convergence)
+  # add constraint on theta2
+  if (out$par[2]>=-200 & out$par[2]<=200) temp.par = out$par else temp.par = theta
+  result=c(temp.par, out$value, out$convergence)
 }
-  
-# simulate time series
+
+# simulate time series with innovation
+
 bootdata.fit = auto.arima(boot.data)
 sim = 500
 plot (boot.data, xlab = "Time", ylab = "Kt", ylim = c(-150,70), col = "blue", lwd = 10)
 
 for ( i in 1:sim) {
   nam5 = paste ("sim.ts", i, sep = ".")
-  temp5 = simulate(bootdata.fit,nsim = length(boot.data), future = FALSE, bootstrap = TRUE, seed = i)
+  # simulate time seriese based on bootstrap of innovation/error term in ARIMA fitting model
+  temp5 = simulate(bootdata.fit,nsim = length(boot.data), future = FALSE, bootstrap = TRUE)
   assign(nam5, temp5)
   
   # time series test on plot
   lines(temp5, col = "grey") 
 }
 
-# bootstrap
+
+# compute parameters theta's based on bootstrapped time series
 theta.boot = matrix(rep(c (0, 0, 0, 0, 0), sim), sim, 5, byrow = TRUE)
 
 for ( i in 1:sim) {
@@ -120,10 +127,10 @@ for ( i in 1:sim) {
 hist(theta.boot[,1],xlab = "theta 1",main = "Histogram of theta 1")
 quantile(theta.boot[,1])
 
-hist(theta.boot[,2][which(theta.boot[,2]>=-100 & theta.boot[,2]<=100)],xlab = "theta 2",main = "Histogram of theta 2",xlim = c(-50,50),breaks=5)
+hist(theta.boot[,2][which(theta.boot[,2]>=-100 & theta.boot[,2]<=100)],xlab = "theta 2",main = "Histogram of theta 2",xlim = c(-5,5),breaks=10)
 quantile(theta.boot[,2])
 
-hist(theta.boot[,3][which(theta.boot[,3]>=0.8 & theta.boot[,3]<=1.2)],xlab = "theta 3",main = "Histogram of theta 3",xlim = c(0.8,1.2),breaks=5)
+hist(theta.boot[,3][which(theta.boot[,3]>=0.8 & theta.boot[,3]<=1.2)],xlab = "theta 3",main = "Histogram of theta 3",xlim = c(0.93,0.99),breaks=10)
 quantile(theta.boot[,3])
 
 # forecast with estimated parameters from bootstrap
@@ -188,6 +195,54 @@ for ( i in 1:sim)
   lines(temp[[1]], col = "grey") #
 }
 
+# way 1
+# prediction interval
+for (i in 2010:2050)
+{
+  nam = matrix(0,1,500)
+for ( j in 1:sim) {
+  if (max(time(eval (parse (text = paste ("mu.boot", j, sep = "."))))) >= i) nam[j] = window(eval (parse (text = paste ("mu.boot", j, sep = "."))), i)[1] else nam[j] = NA
+}
+  nam1 = paste("ts", i, sep = ".")
+  assign( nam1, nam)
+  nam2 = paste("ts", i, 5,sep = ".")
+  assign( nam2, quantile(nam, probs = seq(0, 1, 0.05), na.rm = T)[2])
+  nam3 = paste("ts", i, 95,sep = ".")
+  assign( nam3, quantile(nam, probs = seq(0, 1, 0.05), na.rm = T)[20])
+  nam4 = paste("ts", i, 20,sep = ".")
+  assign( nam4, quantile(nam, probs = seq(0, 1, 0.05), na.rm = T)[5])
+  nam5 = paste("ts", i, 80,sep = ".")
+  assign( nam5, quantile(nam, probs = seq(0, 1, 0.05), na.rm = T)[17])
+  #quantile(ts.2010, probs = seq(0, 1, 0.05), na.rm = T)
+}
+
+for (j in c(5,20,80,95))
+{
+  ts.temp = ts(0, start = 2010, end = 2040, frequency = 1)
+  for (i in 2010:2040)
+  {
+    ts.temp[i-2009] = eval (parse (text = paste ("ts", i, j , sep = ".")))
+  }
+  nam6 = paste("ts.forecast", j,sep = ".")
+  assign(nam6, ts.temp)
+}
+
+# plot
+plot( forecast(bootdata.fit, h = 30, level = 95), xlab = "Time", ylab = "Kt", xlim = c(1828, 2050), ylim = c(-200, 150))
+lines(kt.referencet, col = "blue", lwd = 5)
+lines(boot.data, col = "red", lwd = 5)
+
+lines(ts.forecast.5, col = "yellow", lwd = 5)
+lines(ts.forecast.95, col = "yellow", lwd = 5)
+
+lines(ts.forecast.20, col = "yellow", lwd = 5, lty =2)
+lines(ts.forecast.80, col = "yellow", lwd = 5, lty =2)
+
+
+
+
+
+# way 2
 # plot 95% confidence interval
 quan.ts.2010 = matrix(0,1,500)
 for ( i in 1:sim) {
